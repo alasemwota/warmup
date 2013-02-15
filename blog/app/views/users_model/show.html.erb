@@ -1,0 +1,20 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>User:</b>
+  <%= @users_model.user %>
+</p>
+
+<p>
+  <b>Password:</b>
+  <%= @users_model.password %>
+</p>
+
+<p>
+  <b>Count:</b>
+  <%= @users_model.count %>
+</p>
+
+
+<%= link_to 'Edit', edit_users_model_path(@users_model) %> |
+<%= link_to 'Back', users_models_path %>

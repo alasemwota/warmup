@@ -1,0 +1,162 @@
+class UsersModelsController < ActionController::Base
+
+	include HTTParty
+	
+	base_uri "http://localhost:3000"
+	format :json
+	headers 'Accept' => 'application/json'
+	
+	#POST /users/login
+	def login(string user, string password)
+		if params[:user]
+			user = params[:user]
+		if params[:password]
+			password = params[:password]
+		@user = Users.find(user)
+		if @user != nil && password == @user.password
+			if @user.count != nil
+				@user.count += 1
+			else
+				@user.count = 1
+			end
+			@user.save
+			render json: {:errCode => 1, :count => @user.count}
+			return @user.count #SUCCESS
+		else
+			render json: {:errCode => -1}
+			return -1 #FAILURE
+			
+	end
+	
+	#POST /users/add
+	def add(string user, string password)
+		if params[:user]
+			user = params[:user]
+		if params[:password]
+			password = params[:password]
+		@user = Users.find(user)
+		if @user != nil
+			render json: {:errCode => -2}
+			return -2 #USER EXISTS
+		else 
+			@user = Users.new(:user => user, :password => password)
+			if @user.save
+				@user.count =  1
+				@user.save
+				render json: {:errCode => 1 :count => @user.count}
+				return @user.count #SUCCESS
+			else
+				if user.length == 0 || user.length > 128
+					render json: {:errCode => -3}
+					return -3 #BAD USERNAME
+				else if password.length > 128
+					render json: {:errCode => -4}
+					return -4 #BAD PASSWORD
+				end
+			end
+		end
+	end
+
+	#Helpher function that receives and sends json requests on behalf of Testapi_resetfixture function
+	def TESTAPI_JSON
+		TESTAPI_resetFixture
+		render json: {:errCode => 1}
+	end
+
+	def TESTAPI_resetFixture
+		Users.delete_all
+		return 1
+	end
+			
+
+end
+
+
+
+
+
+'''
+class UsersModelsController < ApplicationController
+  # GET /users_models
+  # GET /users_models.json
+  def index
+    @users_models = UsersModel.all
+
+    respond_to do |format|
+      format.html # index.html.erb
+      format.json { render json: @users_models }
+    end
+  end
+
+  # GET /users_models/1
+  # GET /users_models/1.json
+  def show
+    @users_model = UsersModel.find(params[:id])
+
+    respond_to do |format|
+      format.html # show.html.erb
+      format.json { render json: @users_model }
+    end
+  end
+
+  # GET /users_models/new
+  # GET /users_models/new.json
+  def new
+    @users_model = UsersModel.new
+
+    respond_to do |format|
+      format.html # new.html.erb
+      format.json { render json: @users_model }
+    end
+  end
+
+  # GET /users_models/1/edit
+  def edit
+    @users_model = UsersModel.find(params[:id])
+  end
+
+  # POST /users_models
+  # POST /users_models.json
+  def create
+    @users_model = UsersModel.new(params[:users_model])
+
+    respond_to do |format|
+      if @users_model.save
+        format.html { redirect_to @users_model, notice: 'Users model was successfully created.' }
+        format.json { render json: @users_model, status: :created, location: @users_model }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @users_model.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  # PUT /users_models/1
+  # PUT /users_models/1.json
+  def update
+    @users_model = UsersModel.find(params[:id])
+
+    respond_to do |format|
+      if @users_model.update_attributes(params[:users_model])
+        format.html { redirect_to @users_model, notice: 'Users model was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @users_model.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  # DELETE /users_models/1
+  # DELETE /users_models/1.json
+  def destroy
+    @users_model = UsersModel.find(params[:id])
+    @users_model.destroy
+
+    respond_to do |format|
+      format.html { redirect_to users_models_url }
+      format.json { head :no_content }
+    end
+  end
+end
+'''

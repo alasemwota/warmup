@@ -1,0 +1,27 @@
+<h1>Listing users_models</h1>
+
+<table>
+  <tr>
+    <th>User</th>
+    <th>Password</th>
+    <th>Count</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @users_models.each do |users_model| %>
+  <tr>
+    <td><%= users_model.user %></td>
+    <td><%= users_model.password %></td>
+    <td><%= users_model.count %></td>
+    <td><%= link_to 'Show', users_model %></td>
+    <td><%= link_to 'Edit', edit_users_model_path(users_model) %></td>
+    <td><%= link_to 'Destroy', users_model, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Users model', new_users_model_path %>

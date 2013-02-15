@@ -1,0 +1,33 @@
+//UsersModel.rb
+class UsersModel < ActionController::Base
+
+	def login(string user, string password)
+		@user = Users.find(user)
+		if @user != nil && password == @user.password
+			if @user.count != nil
+				@user.count += 1
+			else
+				@user.count = 1
+			end
+			@user.save
+			return @user.count
+		else
+			return -1
+			
+	end
+
+	def add(string user, string password)
+		@user = Users.find(user)
+		if @user != nil
+			return -2
+		else
+			@
+
+end
+
+//Usercontroller
+class UserModel < ActiveRecord::Base
+  attr_accessible :count, :password, :user
+  validates :user, :presence => true, :uniqueness => true, :length => {:maximum => 128}
+  validates :password, :length => {:maximum => 128}
+end

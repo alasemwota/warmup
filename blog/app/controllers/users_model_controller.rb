@@ -1,0 +1,246 @@
+require 'json'
+class UsersModelController < ApplicationController
+
+	respond_to :json
+	@debug = false #Used to signal when unitTests are being run
+	#POST /users/login
+	def login(user = params[:user], password = params[:password])
+		puts "User: #{user} and password: #{password}"
+		if not user.nil?
+			@user = UsersModel.find_by_user(user)
+			if !@user.nil? && password == @user[:password]
+				if @user[:count] != nil
+					@user[:count] += 1
+				else
+					@user[:count] = 1
+				end
+				@user.save
+				if @debug
+					return {"result" => @user[:count], "output" => {:errCode => 1, :count => @user[:count]}.to_json}
+				else
+					render json: {:errCode => 1, :count => @user[:count]} 
+					return @user[:count] #SUCCESS
+				end
+			end
+		end
+		
+		if @debug
+			return {"result" => -1, "output" => {:errCode => -1}.to_json}
+		else
+			render json: {:errCode => -1}
+			return -1 #FAILURE
+		end
+			
+	end
+	
+	#POST /users/add
+	def add(user = params[:user], password = params[:password])
+		puts "User: #{user} and password: #{password}"
+		@user = UsersModel.find_by_user(user)
+		if !@user.nil? && !user.nil?
+			if @debug
+				return {"result" => -2, "output" => {:errCode => -2}.to_json}
+			else
+				render json: {:errCode => -2}
+				return -2 #USER EXISTS
+			end
+		elsif user.nil? || user.length == 0 || user.length > 128
+			if @debug
+				return {"result" => -3, "output" => {:errCode => -3}.to_json}
+			else
+				render json: {:errCode => -3}
+				return -3 #BAD USERNAME
+			end
+		elsif !password.nil? && password.length > 128
+			if @debug
+				return {"result" => -4, "output" => {:errCode => -4}.to_json}
+			else
+				render json: {:errCode => -4}
+				return -4 #BAD PASSWORD
+			end
+		else
+			@user = UsersModel.new(:user => user, :password => password)
+			@user[:count] = 1
+			@user.save
+			if @debug
+				return {"result" => @user[:count], "output" => {:errCode => 1, :count => @user[:count]}.to_json}
+			else
+				render json: {:errCode => 1, :count => @user[:count]}
+				return @user[:count] #SUCCESS
+			end
+		end
+	end
+
+	def TESTAPI_resetFixture
+		UsersModel.delete_all
+		if @debug
+			return {"result" => 1, "output" => {:errCode => 1}.to_json}
+		else
+			render json: {:errCode => 1}
+			return 1
+		end
+	end
+
+
+	#UnitTests here because nothing else seems to work
+	def unitTests
+		totalTests = 12
+		totalFailed = 0
+		output = ""
+		@debug = true
+
+		#CLEAR DB BEFORE RUNNING TEST. DEFINITELY CRUDE BUT THE ONLY THING I COULD GET WORKING
+		self.TESTAPI_resetFixture
+
+		#Test1: "Does not allow a non-registered user login"
+		response = self.login("NonUser","pass0")
+		result = response["result"]
+		output += response["output"]
+		if result != -1
+			totalFailed += 1
+			puts "Failed Test1"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test2: "Allows a user that supplies no password get added"
+		response = self.add("user2","")
+		result = response["result"]
+		output += response["output"]
+		if result != 1
+			totalFailed += 1
+			puts "Failed Test2"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test3: "Allows a user with a username and password get added"
+		response = self.add("user3","pass3")
+		result = response["result"]
+		output += response["output"]
+		if result != 1
+			totalFailed += 1
+			puts "Failed Test3"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test4: "Doesn't allow an already added user get added again"
+		response = self.add("user3","pass3")
+		result = response["result"]
+		output += response["output"]
+		if result != -2
+			totalFailed += 1
+			puts "Failed Test4"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test5:  "Doesn't allow a blank username get added"
+		response = self.add("","pass5")
+		result = response["result"]
+		output += response["output"]
+		if result != -3
+			totalFailed += 1
+			puts "Failed Test5"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test6: "It allows a username and password of 128 characters to get added"
+		response = self.add("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+		result = response["result"]
+		output += response["output"]
+		if result != 1
+			totalFailed += 1
+			puts "Failed Test6"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test7: "Does not allow a username greater than 128 characters"
+		response = self.add("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","pass7")
+		result = response["result"]
+		output += response["output"]
+		if result != -3
+			totalFailed += 1
+			puts "Failed Test7"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test8: "Does not allow a password greater than 128 characters"
+		response = self.add("user8","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+		result = response["result"]
+		output += response["output"]
+		if result != -4
+			totalFailed += 1
+			puts "Failed Test8"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test9: "Allows a registered user with a password to login and counts number of logins"
+		response = self.login("user3", "pass3")
+		result = response["result"]
+		output += response["output"]
+		if result != 2
+			totalFailed += 1
+			puts "Failed Test9"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test10: "Allows a registered user without a password to login and counts number of logins"
+		response = self.login("user2", "")
+		result = response["result"]
+		output += response["output"]
+		if result != 2
+			totalFailed += 1
+			puts "Failed Test10"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test11: "Doesn't allow a user with wrong password to login"
+		response = self.login("user3", "pass2")
+		result = response["result"]
+		output += response["output"]
+		if result != -1
+			totalFailed += 1
+			puts "Failed Test11"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		#Test12:  "Sucessfully Deletes the DB with call to TESTAPI_reset_fixture"
+		response = self.TESTAPI_resetFixture
+		result = response["result"]
+		output += response["output"]
+		if result != 1
+			totalFailed += 1
+			puts "Failed Test12"
+		end
+		puts "Failed: " + totalFailed.to_s
+		puts "result: " + result.to_s
+		puts "output: " + output.to_s
+
+		@debug = false
+		render json: {:totalTests => totalTests, :nrFailed => totalFailed, :output => output}
+		
+	end
+			
+
+end
+

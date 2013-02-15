@@ -1,0 +1,4 @@
+class UserModel < ActiveRecord::Base
+  attr_accessible :count, :password, :user
+  validates :user, :presence => true, :uniqueness => true, :length => {:minimum => 5}
+end
