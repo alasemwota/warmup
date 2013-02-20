@@ -1,0 +1,17 @@
+.main{
+	background-color: #f8f9fa;
+}
+
+.center
+{
+margin-left:auto;
+margin-right:auto;
+width:70%;
+}
+
+.field{
+text-align: center;
+width: 20em;
+height: 15em;
+
+}

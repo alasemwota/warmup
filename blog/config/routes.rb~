@@ -3,10 +3,10 @@ Blog::Application.routes.draw do
  
 
   #Matching urls to methods
-  match "/users/login" => "users_model#login", :via => [:post]
+  match "/users/login" => "users_model#login", :via => [:post, :get]
   match "/users/add" => "users_model#add", :via => [:post]
   match "/TESTAPI/resetFixture" => "users_model#TESTAPI_resetFixture", :via => [:post]
-  match "/TESTAPI/unitTests" => "users_model_test#unitTests", :via => [:post]
+  match "/TESTAPI/unitTests" => "users_model#unitTests", :via => [:post]
   
 
   # The priority is based upon order of creation:
