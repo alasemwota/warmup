@@ -9,13 +9,9 @@ margin-right:auto;
 width:70%;
 }
 
-#Display-page{
-	width: auto;
-	text-height: 50px;
-}
 .field{
 text-align: center;
-width: 20em;
+width: auto;
 height: 15em;
 
 }

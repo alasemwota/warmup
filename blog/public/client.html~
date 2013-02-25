@@ -20,7 +20,7 @@
     
                     <p>
                         <label for="login-pass">password:</label>
-                        <input type="password:" id="login-password" autofocus />
+                        <input type="password" id="login-password" autofocus />
                     </p>
                     
                    <input type = "button" onClick="handleLogin()" value="Log In"/>
